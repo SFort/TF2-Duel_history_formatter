@@ -13,5 +13,7 @@ So don't exspect too mutch from it, the code was done quick
 - Obviously there are a lot of code improvments to be made but i would not exspect anybody to bother.
 # Output Screenshots
 (Ignore the unrecognised character boxes that's just my pc)
-![Image of k/d command](https://i.imgur.com/yGNLjM5.png)
-![Image of result command](https://i.imgur.com/vH7f1KP.png)
+
+K/D Ratio    | Main output
+------------ | -------------
+![Image of k/d command](https://i.imgur.com/yGNLjM5.png) | ![Image of result command](https://i.imgur.com/vH7f1KP.png)
