@@ -1,0 +1,7 @@
+[package]
+name = "tf2_duel_scrape"
+version = "1.0.0"
+
+[dependencies]
+scraper = "0.9.1"
+tabwriter = "1.1.0"
