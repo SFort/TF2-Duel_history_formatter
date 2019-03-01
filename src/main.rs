@@ -1,3 +1,5 @@
+extern crate scraper;
+extern crate tabwriter;
 use scraper::{selector::Selector, Html};
 use std::{
     collections::HashMap,
@@ -84,7 +86,7 @@ fn main() {
                             println!("{}", String::from_utf8(tw.into_inner().unwrap()).unwrap());
                             //TODO
                         }
-                        _ => println!("Avelible options:\nkd\n   Kills, Deaths Grouped by name \n"),
+                        _ => println!("Available options:\nkd\nresult\n"),
                         //Stuff
                     }
                 }

@@ -227,14 +227,6 @@ version = "0.1.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
-name = "projectDuelScrape"
-version = "0.1.0"
-dependencies = [
- "scraper 0.9.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "tabwriter 1.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
-]
-
-[[package]]
 name = "quote"
 version = "0.6.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -500,6 +492,14 @@ dependencies = [
  "futf 0.1.4 (registry+https://github.com/rust-lang/crates.io-index)",
  "mac 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "utf-8 0.7.5 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "tf2_duel_scrape"
+version = "1.0.0"
+dependencies = [
+ "scraper 0.9.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "tabwriter 1.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
