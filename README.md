@@ -33,3 +33,7 @@ Avalable commands :
 K/D Ratio    | Main output
 ------------ | -------------
 ![Image of k/d command](https://i.imgur.com/yGNLjM5.png) | ![Image of result command](https://i.imgur.com/vH7f1KP.png)
+
+
+### Credits
+- [Dogman](https://github.com/dogman176) Debuging and compiling the windows version.

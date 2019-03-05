@@ -102,7 +102,7 @@ fn main() {
             }
         }
     } else {
-        println!("Specify what to do");
+        println!("Program requires at last 1 argument");
     }
 
     fn parse_html(s_path: String) -> Vec<Duel> {
@@ -193,7 +193,6 @@ fn main() {
                 end,
             });
         }
-        println!("DEBUG\n{}", text_html);
         return output;
     }
     #[derive(Debug, Clone)]
