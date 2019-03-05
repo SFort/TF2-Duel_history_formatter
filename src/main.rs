@@ -1,6 +1,4 @@
-extern crate scraper;
 extern crate tabwriter;
-use scraper::{selector::Selector, Html};
 use std::{
     collections::HashMap,
     env,
@@ -36,7 +34,8 @@ fn main() {
                     match comm.to_lowercase().as_ref() {
                         "exit" | "quit" => break,
                         "result" => {
-                            let mut s_duels: Vec<(String, u32, u32, u32)> = group_end(&duels);
+                            let mut s_duels: Vec<(String, u32, u32, u32, String)> =
+                                group_end(&duels);
                             match get_input("Sort by?\n\t(name, win, loss, other)")
                                 .to_lowercase()
                                 .as_ref()
@@ -47,9 +46,11 @@ fn main() {
                                 "other" => s_duels.sort_by(|a, b| b.3.partial_cmp(&a.3).unwrap()),
                                 _ => {}
                             }
-                            let mut str_output = "Name\tVictory\tLoss\tOther\n".to_string();
+                            let mut str_output =
+                                "Name\tVictory\tLoss\tOther\t\tProfile Link\n".to_string();
                             for k in s_duels {
-                                str_output += &format!("{}\t{}\t{}\t{}\n", k.0, k.1, k.2, k.3);
+                                str_output +=
+                                    &format!("{}\t{}\t{}\t{}\t\t{}\n", k.0, k.1, k.2, k.3, k.4);
                             }
 
                             let mut tw = TabWriter::new(vec![]);
@@ -59,10 +60,16 @@ fn main() {
                         }
                         "kd" => {
                             let s_duels = group_duels(&duels, false);
-                            let mut duels: Vec<(String, u32, u32, f32)> = s_duels
+                            let mut duels: Vec<(String, u32, u32, f32, String)> = s_duels
                                 .iter()
                                 .map(|x| {
-                                    (x.name.to_string(), x.score, x.score2, kd(x.score, x.score2))
+                                    (
+                                        x.name.to_string(),
+                                        x.score,
+                                        x.score2,
+                                        kd(x.score, x.score2),
+                                        x.link.to_string(),
+                                    )
                                 })
                                 .collect();
                             match get_input("Sort by?\n\t(name, kill, death, kd)")
@@ -75,9 +82,11 @@ fn main() {
                                 "kd" => duels.sort_by(|a, b| b.3.partial_cmp(&a.3).unwrap()),
                                 _ => {}
                             }
-                            let mut str_output = "Name\tYou\tThem\tKD\n".to_string();
+                            let mut str_output =
+                                "Name\tYou\tThem\tKD\t\tProfile Link\n".to_string();
                             for k in duels {
-                                str_output += &format!("{}\t{}\t{}\t{}\n", k.0, k.1, k.2, k.3);
+                                str_output +=
+                                    &format!("{}\t{}\t{}\t{}\t\t{}\n", k.0, k.1, k.2, k.3, k.4);
                             }
 
                             let mut tw = TabWriter::new(vec![]);
@@ -100,68 +109,138 @@ fn main() {
         let mut file = File::open(s_path).unwrap();
         let mut text_html = String::new();
         file.read_to_string(&mut text_html).unwrap();
-        let html = Html::parse_document(text_html.as_ref());
-        let table = html
-            .select(&Selector::parse("table").unwrap())
-            .next()
-            .unwrap();
+        text_html = text_html
+            .split_at(text_html.find("<tbody>").unwrap() + 7)
+            .1
+            .to_string();
+        text_html = text_html
+            .split_at(text_html.rfind("</tbody>").unwrap())
+            .0
+            .to_string();
+        let mut text_html = text_html;
         let mut output: Vec<Duel> = Vec::new();
-        let data = table
-            .text()
-            .filter(|x| !(x.contains("\n") | x.contains("\t")))
-            .collect::<Vec<&str>>();
-        for i in (5..data.len()).step_by(5) {
+        loop {
+            //I realise this looks bad but it cuts down on processing time as the the previous
+            //alternative
+            //Time value
+            let (time, link, name, score, score2, end);
+            text_html = match text_html.find("<td>") {
+                Some(a) => text_html.split_at(a + 4).1.to_string(),
+                None => break,
+            };
+            match text_html.find("</td>") {
+                Some(a) => {
+                    time = Some(text_html.clone().split_at(a).0.to_string());
+                }
+                None => break,
+            };
+            //TODO Oponent Name / Link
+            text_html = match text_html.find("<td>") {
+                Some(a) => text_html.split_at(a + 4).1.to_string(),
+                None => break,
+            };
+            match text_html.find("</td>") {
+                Some(a) => {
+                    let usr = text_html.clone().split_at(a).0.to_string();
+                    let (left, u_name) = usr.split_at(usr.rfind("\">").unwrap() + 2);
+                    //TODO names are currently URL encoded
+                    name = u_name.split_at(u_name.rfind("</a>").unwrap()).0.to_string();
+                    let u_link = left.split_at(left.find("<a href=\"").unwrap() + 9).1;
+                    link = u_link.split_at(u_link.find("\">").unwrap()).0.to_string();
+                    //TODO set name, link
+                }
+                None => break,
+            };
+            //score
+            text_html = match text_html.find("<td>") {
+                Some(a) => text_html.split_at(a + 4).1.to_string(),
+                None => break,
+            };
+            match text_html.find("</td>") {
+                Some(a) => {
+                    score = text_html.clone().split_at(a).0.parse::<u32>().unwrap();
+                }
+                None => break,
+            };
+            //score 2
+            text_html = match text_html.find("<td>") {
+                Some(a) => text_html.split_at(a + 4).1.to_string(),
+                None => break,
+            };
+            match text_html.find("</td>") {
+                Some(a) => {
+                    score2 = text_html.clone().split_at(a).0.parse::<u32>().unwrap();
+                }
+                None => break,
+            };
+            //end
+            text_html = match text_html.find("<td>") {
+                Some(a) => text_html.split_at(a + 4).1.to_string(),
+                None => break,
+            };
+            match text_html.find("</td>") {
+                Some(a) => {
+                    end = Some(text_html.clone().split_at(a).0.parse::<u8>().unwrap());
+                }
+                None => break,
+            };
             output.push(Duel {
-                time: Some(data[i].to_string()),
-                name: data[i + 1].to_string(),
-                score: data[i + 2].parse().unwrap(),
-                score2: data[i + 3].parse().unwrap(),
-                end: Some(if data[i + 4] == "0" { true } else { false }),
+                time,
+                link,
+                name,
+                score,
+                score2,
+                end,
             });
         }
-
+        println!("DEBUG\n{}", text_html);
         return output;
     }
     #[derive(Debug, Clone)]
     struct Duel {
         time: Option<String>,
+        link: String,
         name: String, // Opponent Name
         score: u32,   //Player Score
         score2: u32,  //Opponent Score
-        end: Option<bool>,
+        end: Option<u8>,
     }
     fn group_duels(duels: &Vec<Duel>, ended_games_only: bool) -> Vec<Duel> {
-        let mut hash_duels: HashMap<&String, (u32, u32)> = HashMap::new();
+        let mut hash_duels: HashMap<(&String, &String), (u32, u32)> = HashMap::new();
         for duel in duels {
             if ended_games_only {
-                if duel.end != Some(true) {
+                if duel.end != Some(0) {
                     continue;
                 }
             }
-            if !hash_duels.contains_key(&duel.name) {
-                hash_duels.insert(&duel.name, (duel.score, duel.score2));
+            if !hash_duels.contains_key(&(&duel.name, &duel.link)) {
+                hash_duels.insert((&duel.name, &duel.link), (duel.score, duel.score2));
             } else {
-                let (s1, s2) = hash_duels[&duel.name];
-                hash_duels.insert(&duel.name, (duel.score + s1, duel.score2 + s2));
+                let (s1, s2) = hash_duels[&(&duel.name, &duel.link)];
+                hash_duels.insert(
+                    (&duel.name, &duel.link),
+                    (duel.score + s1, duel.score2 + s2),
+                );
             }
         }
         hash_duels
             .iter()
             .map(|(key, num)| Duel {
-                name: key.to_string(),
+                name: key.0.to_string(),
+                link: key.1.to_string(),
                 score: num.0,
                 score2: num.1,
                 time: None,
-                end: if ended_games_only { Some(true) } else { None },
+                end: if ended_games_only { Some(0) } else { None },
             })
             .collect()
     }
-    fn group_end(duels: &Vec<Duel>) -> Vec<(String, u32, u32, u32)> {
-        let mut hash_duels: HashMap<&String, (u32, u32, u32)> = HashMap::new();
+    fn group_end(duels: &Vec<Duel>) -> Vec<(String, u32, u32, u32, String)> {
+        let mut hash_duels: HashMap<(&String, &String), (u32, u32, u32)> = HashMap::new();
         for duel in duels {
             //TODO I dont know what the end values mean so anything not 0 just is sent under Other
             //not won or lost
-            let (s0, s1, s2) = if duel.end == Some(true) {
+            let (s0, s1, s2) = if duel.end == Some(0) {
                 if duel.score > duel.score2 {
                     (1, 0, 0)
                 } else {
@@ -170,16 +249,16 @@ fn main() {
             } else {
                 (0, 0, 1)
             };
-            if !hash_duels.contains_key(&duel.name) {
-                hash_duels.insert(&duel.name, (s0, s1, s2));
+            if !hash_duels.contains_key(&(&duel.name, &duel.link)) {
+                hash_duels.insert((&duel.name, &duel.link), (s0, s1, s2));
             } else {
-                let (sa0, sa1, sa2) = hash_duels[&duel.name];
-                hash_duels.insert(&duel.name, (s0 + sa0, s1 + sa1, s2 + sa2));
+                let (sa0, sa1, sa2) = hash_duels[&(&duel.name, &duel.link)];
+                hash_duels.insert((&duel.name, &duel.link), (s0 + sa0, s1 + sa1, s2 + sa2));
             }
         }
         hash_duels
             .iter()
-            .map(|(key, num)| (key.to_string(), num.0, num.1, num.2))
+            .map(|(key, num)| (key.0.to_string(), num.0, num.1, num.2, key.1.to_string()))
             .collect()
     }
     fn kd(score: u32, score2: u32) -> f32 {
