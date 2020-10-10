@@ -24,9 +24,7 @@ If your not familliar with console just do ./program_name then drag the html fil
 Avalable commands :
   - kd
   - result
-### Need help
-- So far I don't know what the End Reason values actually mean so if somebody does please submit a issue on it
-- Obviously there are a lot of code improvments to be made but i would not exspect anybody to bother.
+
 # Output Screenshots
 (Ignore the unrecognised character boxes that's just my pc)
 
